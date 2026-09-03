@@ -1,0 +1,9 @@
+{
+	"id": "ob-pi",
+	"name": "Ob Pi",
+	"version": "0.1.0",
+	"minAppVersion": "1.6.0",
+	"description": "Minimal AI side chat for your vault, powered by the pi agent stack.",
+	"author": "hugolau",
+	"isDesktopOnly": true
+}

@@ -1,0 +1,31 @@
+{
+	"name": "ob-pi",
+	"version": "0.1.0",
+	"description": "Minimal AI side chat for Obsidian, powered by the pi agent stack",
+	"main": "dist/main.js",
+	"type": "module",
+	"scripts": {
+		"dev": "node esbuild.config.mjs",
+		"build": "tsc -noEmit && node esbuild.config.mjs production",
+		"typecheck": "tsc -noEmit"
+	},
+	"keywords": [
+		"obsidian",
+		"obsidian-plugin",
+		"ai",
+		"chat"
+	],
+	"author": "hugolau",
+	"license": "MIT",
+	"devDependencies": {
+		"@types/node": "^22.15.0",
+		"builtin-modules": "^5.0.0",
+		"esbuild": "^0.25.0",
+		"obsidian": "^1.8.7",
+		"typescript": "^5.8.0"
+	},
+	"dependencies": {
+		"@earendil-works/pi-agent-core": "0.84.4",
+		"@earendil-works/pi-ai": "0.84.4"
+	}
+}

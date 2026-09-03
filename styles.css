@@ -1,0 +1,96 @@
+/* Ob Pi — minimal Pi-idiom chat styles.
+   Only CSS variables from the active Obsidian theme; no hard-coded colors. */
+
+.ob-pi-chat {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 0;
+}
+
+.ob-pi-chat .ob-pi-transcript {
+	flex: 1 1 auto;
+	overflow-y: auto;
+	padding: var(--size-4-3) var(--size-4-4);
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-4-4);
+}
+
+/* Turns: no bubbles, just typographic hierarchy. */
+
+.ob-pi-turn {
+	line-height: var(--line-height-normal);
+	min-width: 0;
+}
+
+.ob-pi-user {
+	display: flex;
+	gap: var(--size-2-2);
+	align-items: baseline;
+}
+
+.ob-pi-user .ob-pi-prompt {
+	color: var(--text-accent);
+	flex: none;
+	user-select: none;
+}
+
+.ob-pi-user .ob-pi-user-text {
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.ob-pi-assistant {
+	color: var(--text-normal);
+}
+
+.ob-pi-assistant.is-streaming .ob-pi-md::after {
+	content: "▍";
+	color: var(--text-faint);
+	animation: ob-pi-blink 1s steps(2, start) infinite;
+}
+
+@keyframes ob-pi-blink {
+	to {
+		visibility: hidden;
+	}
+}
+
+.ob-pi-tool {
+	color: var(--text-faint);
+	font-family: var(--font-monospace);
+	font-size: var(--font-ui-smaller);
+}
+
+.ob-pi-status {
+	flex: none;
+	padding: var(--size-2-2) var(--size-4-4);
+	border-top: 1px solid var(--background-modifier-border);
+	color: var(--text-faint);
+	font-family: var(--font-monospace);
+	font-size: var(--font-ui-smaller);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.ob-pi-status.is-streaming {
+	color: var(--text-accent);
+}
+
+.ob-pi-input {
+	flex: none;
+	resize: none;
+	border: none;
+	border-top: 1px solid var(--background-modifier-border);
+	border-radius: 0;
+	box-shadow: none;
+	background: var(--background-primary);
+	padding: var(--size-4-2) var(--size-4-4);
+	font-size: var(--font-ui-medium);
+}
+
+.ob-pi-input:focus {
+	box-shadow: none;
+}
