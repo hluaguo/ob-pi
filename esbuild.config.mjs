@@ -33,6 +33,7 @@ const context = await esbuild.context({
 		...builtins,
 	],
 	format: "cjs",
+	jsx: "automatic",
 	target: "es2022",
 	platform: "node",
 	logLevel: "info",

@@ -16,16 +16,20 @@ The agent can search and read vault notes through small custom tools.
 src/
   main.ts          Obsidian harness: lifecycle, commands, ribbon, view registration,
                    settings persistence, VaultBridge implementation. Stays thin.
-  view.ts          PiChatView (ItemView) — owns the leaf, hosts ChatUI.
+  view.tsx         PiChatView (ItemView) — owns the leaf, mounts the React app.
   settings.ts      ObPiSettings interface, defaults, PluginSettingTab.
-  ui/chat.ts       ChatUI: transcript + input DOM, AgentEvent → DOM rendering.
+  ui/
+    store.ts       ObChatStore: framework-free transcript store; the single
+                   subscriber to AgentEvents (useSyncExternalStore-compatible).
+    ChatApp.tsx    React app: assistant-ui primitives in Pi idiom; markdown via
+                   Obsidian MarkdownRenderer inside the Text part component.
   agent/
     client.ts      PiChatAgent: builtinModels() + Agent wiring, model/system-prompt/
                    tool setters. The only place both worlds meet.
     auth.ts        PiAuthStore: read-only CredentialStore over ~/.pi/agent/auth.json.
     tools.ts       createVaultTools(): vault_search / vault_read behind VaultBridge.
 docs/research/     Verified API research: pi packages, pi-ai, pi-agent-core,
-                   Obsidian plugin API, integration strategy.
+                   assistant-ui, Obsidian plugin API, integration strategy.
 esbuild.config.mjs ESM sources → CJS main.js (see "Build" below).
 manifest.json      Plugin manifest (isDesktopOnly: true — required, we use Node APIs).
 styles.css         Only theme CSS variables; no hard-coded colors.
@@ -60,6 +64,14 @@ Install into a vault for testing: copy `dist/*` to
    are fine; anything else mobile-unsafe needs `isDesktopOnly` anyway.
 6. **Read-only credentials.** `PiAuthStore` may read `~/.pi/agent/auth.json` but never
    writes it — the file is owned by the pi CLI.
+7. **UI stack**: React 19 + `@assistant-ui/react` unstyled primitives (see
+   docs/research/assistant-ui.md). Do not add `@assistant-ui/react-markdown` —
+   text parts render through Obsidian's `MarkdownRenderer`. Do not create message
+   components inline in JSX props (remounts kill streaming performance); pass
+   `app`/`component` via `ObsidianContext`.
+8. **Store layering**: `ObChatStore` (src/ui/store.ts) is the single subscriber to
+   agent events and imports neither react nor obsidian. Components read snapshots
+   via `useSyncExternalStore` — never hold agent references in components.
 
 ## pi idiom (UI rules)
 
@@ -84,9 +96,11 @@ Install into a vault for testing: copy `dist/*` to
 `PiChatAgent.create()` builds `builtinModels()` (all builtin providers, auth from the
 pi CLI's auth.json or env vars), picks the first available or configured model, and
 constructs `new Agent({ streamFn: models.stream, initialState: { model, systemPrompt,
-thinkingLevel, tools } })` with vault tools from `VaultBridge`. The view subscribes to
-`agent.subscribe(events)` and renders; `send()` calls `agent.prompt()` which resolves
-when the run settles. Settings mutate live via `agent.state` assignments.
+thinkingLevel, tools } })` with vault tools from `VaultBridge`. `ObChatStore`
+subscribes to agent events and keeps a snapshot (messages/isRunning/status); the
+React view converts that snapshot into assistant-ui's runtime via
+`useExternalStoreRuntime` (`onNew` → `store.send` → `agent.prompt()`, which resolves
+when the run settles). Settings mutate live via `agent.state` assignments.
 
 ## Ideas backlog
 

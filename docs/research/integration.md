@@ -93,6 +93,8 @@ in place and upgraded to markdown once.
 | Spawn `pi --mode rpc` subprocess (JSON-RPC) | Clean isolation, works without bundling pi at all; but requires pi installed on user's machine, breaks desktop-only guarantee, and complicates streaming auth. Revisit if we ever want the *coding* agent inside a vault. Deferred. |
 | `pi-client` (remote CBOR sessions) | For talking to a *remote* pi server — interesting future "connect to your own agent" feature. Not now. |
 | Raw fetch + OpenAI SDK | Reinvents model catalog/auth across 40 providers — the whole reason pi-ai exists. ❌ |
+| Hand-rolled DOM chat UI | Used for the first scaffold; replaced by assistant-ui unstyled primitives when the UI grew (composer states, smart auto-scroll, message mapping). See docs/research/assistant-ui.md. |
+| `@assistant-ui/react-markdown` | Would add remark/mdast stack and bypass Obsidian's native renderer (links, embeds, theme). We override the Text part with `MarkdownRenderer.render` instead. ❌ |
 
 ## 8. Known sharp edges
 

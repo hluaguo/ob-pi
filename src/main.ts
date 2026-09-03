@@ -9,11 +9,12 @@ import { Plugin, WorkspaceLeaf, Notice, TFile } from "obsidian";
 import { PiChatView, VIEW_TYPE_OB_PI } from "./view";
 import { DEFAULT_SETTINGS, ObPiSettingTab, type ObPiSettings } from "./settings";
 import { PiChatAgent, resolveModelId } from "./agent/client";
+import { ObChatStore } from "./ui/store";
 import type { VaultBridge } from "./agent/tools";
-import type { Model } from "@earendil-works/pi-ai";
 
 export default class ObPiPlugin extends Plugin {
 	settings: ObPiSettings = { ...DEFAULT_SETTINGS };
+	readonly store: ObChatStore = new ObChatStore();
 	private chatAgent: PiChatAgent | null = null;
 	private agentError: string | null = null;
 	private view: PiChatView | null = null;
@@ -37,10 +38,7 @@ export default class ObPiPlugin extends Plugin {
 		this.addCommand({
 			id: "new-conversation",
 			name: "New conversation",
-			callback: () => {
-				this.chatAgent?.reset();
-				this.view?.getChat()?.clear();
-			},
+			callback: () => this.newConversation(),
 		});
 
 		this.addCommand({
@@ -48,7 +46,7 @@ export default class ObPiPlugin extends Plugin {
 			name: "Stop generating",
 			checkCallback: (checking) => {
 				if (!this.chatAgent?.isStreaming) return false;
-				if (!checking) this.stop();
+				if (!checking) this.store.stop();
 				return true;
 			},
 		});
@@ -81,12 +79,12 @@ export default class ObPiPlugin extends Plugin {
 				enableVaultTools: this.settings.enableVaultTools,
 				vault: this.vaultBridge(),
 			});
-			this.chatAgent.subscribe((event) => {
-				this.view?.getChat()?.onAgentEvent(event);
-			});
+			this.store.attach(this.chatAgent);
+			this.refreshStatus();
 			return this.chatAgent;
 		} catch (error) {
 			this.agentError = error instanceof Error ? error.message : String(error);
+			this.store.setStatus(this.agentError);
 			new Notice(`Ob Pi: ${this.agentError}`);
 			return null;
 		}
@@ -116,33 +114,36 @@ export default class ObPiPlugin extends Plugin {
 			new Notice(`Ob Pi: ${this.agentError ?? "agent unavailable"}`);
 			return;
 		}
-		if (agent.isStreaming) {
-			new Notice("Ob Pi: still generating — Esc to stop");
-			return;
-		}
 		try {
-			await agent.prompt(text);
+			await this.store.send(text);
 		} catch (error) {
 			new Notice(`Ob Pi: ${error instanceof Error ? error.message : String(error)}`);
 		}
 	}
 
 	stop(): void {
-		this.chatAgent?.stop();
+		this.store.stop();
+	}
+
+	newConversation(): void {
+		void this.ensureAgent().then(() => this.store.reset());
 	}
 
 	statusText(): string {
 		if (this.agentError) return this.agentError;
 		const model = this.chatAgent?.agent.state.model;
-		const modelLabel = model ? `${model.provider}/${model.id}` : "no model";
-		return modelLabel;
+		return model ? `${model.provider}/${model.id}` : "no model";
+	}
+
+	private refreshStatus(): void {
+		this.store.setStatus(this.statusText());
 	}
 
 	async getAvailableModelOptions(): Promise<{ value: string; label: string }[]> {
 		const agent = await this.ensureAgent();
 		if (!agent) return [];
 		const models = await agent.availableModels();
-		return models.map((model: Model<any>) => ({
+		return models.map((model) => ({
 			value: `${model.provider}/${model.id}`,
 			label: `${model.provider} · ${model.id}`,
 		}));
@@ -165,7 +166,6 @@ export default class ObPiPlugin extends Plugin {
 		}
 		if (leaf) {
 			await workspace.revealLeaf(leaf);
-			this.view?.getChat()?.focus();
 		}
 	}
 
@@ -174,6 +174,7 @@ export default class ObPiPlugin extends Plugin {
 		if (!agent) return;
 		const model = resolveModelId(agent.models, this.settings.modelId);
 		if (model) agent.setModel(model);
+		this.refreshStatus();
 	}
 
 	applySystemPrompt(): void {

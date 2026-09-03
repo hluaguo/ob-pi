@@ -19,12 +19,14 @@ metadata lines for tool calls, markdown for answers. Your theme's fonts and colo
 ## Features
 
 - Right-sidebar chat view (ribbon icon or command palette → "Ob Pi: Open chat")
-- Streaming markdown responses
+- Streaming markdown responses rendered by Obsidian's own renderer
+- Built on [assistant-ui](https://www.assistant-ui.com/) primitives — proper
+  composer UX, auto-scroll that respects your scroll position, send/stop states
 - All builtin pi providers — credentials from the pi CLI (`~/.pi/agent/auth.json`)
   or environment variables, never re-entered
 - Vault tools the agent can use: `vault_search`, `vault_read`
 - Model picker, system prompt, thinking level, tools toggle in settings
-- Esc aborts generation; "New conversation" resets
+- Esc stops generation; "New conversation" resets
 
 ## Requirements
 
@@ -49,6 +51,7 @@ Copy `dist/*` to `<vault>/.obsidian/plugins/ob-pi/` and enable the plugin.
   - [pi-sdk-packages.md](docs/research/pi-sdk-packages.md) — which pi layers we use and why
   - [pi-ai-api.md](docs/research/pi-ai-api.md) — models, providers, auth
   - [pi-agent-core-api.md](docs/research/pi-agent-core-api.md) — Agent loop, tools, events
+  - [assistant-ui.md](docs/research/assistant-ui.md) — chat primitives, external-store adapter
   - [obsidian-plugin-api.md](docs/research/obsidian-plugin-api.md) — views, settings, markdown
   - [integration.md](docs/research/integration.md) — ESM→CJS, Electron renderer, strategy
 

@@ -1,5 +1,11 @@
-/* Ob Pi — minimal Pi-idiom chat styles.
+/* Ob Pi — minimal Pi-idiom chat styles (assistant-ui unstyled primitives).
    Only CSS variables from the active Obsidian theme; no hard-coded colors. */
+
+.ob-pi-container {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+}
 
 .ob-pi-chat {
 	display: flex;
@@ -8,7 +14,48 @@
 	padding: 0;
 }
 
-.ob-pi-chat .ob-pi-transcript {
+/* Header: model label + new-chat. Quiet, out of the way. */
+
+.ob-pi-header {
+	flex: none;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--size-2-2);
+	padding: var(--size-2-2) var(--size-4-3);
+	color: var(--text-faint);
+	font-family: var(--font-monospace);
+	font-size: var(--font-ui-smaller);
+}
+
+.ob-pi-header-model {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.ob-pi-btn {
+	background: none;
+	border: none;
+	box-shadow: none;
+	color: var(--text-faint);
+	cursor: pointer;
+	padding: 0 var(--size-2-1);
+	font-size: var(--font-ui-small);
+	line-height: 1;
+}
+
+.ob-pi-btn:hover {
+	color: var(--text-normal);
+}
+
+.ob-pi-btn-stop {
+	color: var(--text-error);
+}
+
+/* Turns: no bubbles, just typographic hierarchy. */
+
+.ob-pi-transcript {
 	flex: 1 1 auto;
 	overflow-y: auto;
 	padding: var(--size-4-3) var(--size-4-4);
@@ -17,7 +64,11 @@
 	gap: var(--size-4-4);
 }
 
-/* Turns: no bubbles, just typographic hierarchy. */
+.ob-pi-empty {
+	color: var(--text-faint);
+	margin-top: var(--size-8-4);
+	text-align: center;
+}
 
 .ob-pi-turn {
 	line-height: var(--line-height-normal);
@@ -43,9 +94,19 @@
 
 .ob-pi-assistant {
 	color: var(--text-normal);
+	animation: ob-pi-fade-in 160ms ease-out;
 }
 
-.ob-pi-assistant.is-streaming .ob-pi-md::after {
+@keyframes ob-pi-fade-in {
+	from {
+		opacity: 0;
+	}
+}
+
+/* Streaming caret on the last, still-growing assistant message. */
+
+.ob-pi-turn[data-running="true"] .ob-pi-md > :last-child::after,
+.ob-pi-assistant[data-running="true"]::after {
 	content: "▍";
 	color: var(--text-faint);
 	animation: ob-pi-blink 1s steps(2, start) infinite;
@@ -57,15 +118,54 @@
 	}
 }
 
+/* Tool activity: one dim monospace line per call. */
+
 .ob-pi-tool {
 	color: var(--text-faint);
 	font-family: var(--font-monospace);
 	font-size: var(--font-ui-smaller);
 }
 
+.ob-pi-tool[data-error="true"] {
+	color: var(--text-error);
+}
+
+/* Composer */
+
+.ob-pi-composer {
+	flex: none;
+	display: flex;
+	align-items: flex-end;
+	border-top: 1px solid var(--background-modifier-border);
+	background: var(--background-primary);
+}
+
+.ob-pi-input {
+	flex: 1 1 auto;
+	resize: none;
+	border: none;
+	border-radius: 0;
+	box-shadow: none;
+	background: transparent;
+	padding: var(--size-4-2) var(--size-2-2) var(--size-4-2) var(--size-4-4);
+	font-size: var(--font-ui-medium);
+	max-height: 240px;
+}
+
+.ob-pi-input:focus {
+	box-shadow: none;
+}
+
+.ob-pi-composer-actions {
+	flex: none;
+	padding: var(--size-2-2) var(--size-4-3);
+}
+
+/* Status line */
+
 .ob-pi-status {
 	flex: none;
-	padding: var(--size-2-2) var(--size-4-4);
+	padding: var(--size-2-1) var(--size-4-4) var(--size-2-2);
 	border-top: 1px solid var(--background-modifier-border);
 	color: var(--text-faint);
 	font-family: var(--font-monospace);
@@ -73,24 +173,20 @@
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
+	min-height: var(--size-4-6);
 }
 
-.ob-pi-status.is-streaming {
+.ob-pi-status[data-running="true"] {
 	color: var(--text-accent);
 }
 
-.ob-pi-input {
-	flex: none;
-	resize: none;
-	border: none;
-	border-top: 1px solid var(--background-modifier-border);
-	border-radius: 0;
-	box-shadow: none;
-	background: var(--background-primary);
-	padding: var(--size-4-2) var(--size-4-4);
-	font-size: var(--font-ui-medium);
+/* Rendered markdown inside assistant turns: keep Obsidian defaults, trim
+   the margins so consecutive blocks stay one visual turn. */
+
+.ob-pi-md > :first-child {
+	margin-top: 0;
 }
 
-.ob-pi-input:focus {
-	box-shadow: none;
+.ob-pi-md > :last-child {
+	margin-bottom: 0;
 }

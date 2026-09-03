@@ -20,13 +20,18 @@
 	"license": "MIT",
 	"devDependencies": {
 		"@types/node": "^22.15.0",
+		"@types/react": "^19.2.18",
+		"@types/react-dom": "^19.2.5",
 		"builtin-modules": "^5.0.0",
 		"esbuild": "^0.25.0",
 		"obsidian": "^1.8.7",
 		"typescript": "^5.8.0"
 	},
 	"dependencies": {
+		"@assistant-ui/react": "^0.15.17",
 		"@earendil-works/pi-agent-core": "0.84.4",
-		"@earendil-works/pi-ai": "0.84.4"
+		"@earendil-works/pi-ai": "0.84.4",
+		"react": "^19.2.8",
+		"react-dom": "^19.2.8"
 	}
 }
