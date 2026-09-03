@@ -13,6 +13,11 @@ import { builtinModels } from "@earendil-works/pi-ai/providers/all";
 import { defaultProviderAuthContext, type Model, type Models } from "@earendil-works/pi-ai";
 import { PiAuthStore, DEFAULT_PI_AUTH_PATH } from "./auth";
 import { createVaultTools, type VaultBridge } from "./tools";
+import {
+	createSelfTools,
+	formatSystemPrompt,
+	type MemoryBridge,
+} from "./skills";
 
 export interface PiChatAgentConfig {
 	/** Provider-scoped model id, e.g. "anthropic/claude-sonnet-4-5". Empty = first available. */
@@ -20,7 +25,10 @@ export interface PiChatAgentConfig {
 	systemPrompt: string;
 	thinkingLevel: ThinkingLevel;
 	enableVaultTools: boolean;
+	enableSelfTools: boolean;
 	vault: VaultBridge;
+	/** Skills/memory bridge; enables self-growth tools when provided. */
+	memory: MemoryBridge | null;
 }
 
 /** Resolve "<provider>/<model>" against the runtime model catalog. */
@@ -34,9 +42,18 @@ export class PiChatAgent {
 	readonly models: Models;
 	readonly agent: Agent;
 
+	/** Recompute system prompt from base + memory + skill index. */
+	refreshSystemPrompt: () => Promise<void> = async () => {};
+
 	private constructor(models: Models, agent: Agent) {
 		this.models = models;
 		this.agent = agent;
+	}
+
+	private static async buildSystemPrompt(config: PiChatAgentConfig): Promise<string> {
+		if (!config.memory) return config.systemPrompt;
+		const [memory, skills] = await Promise.all([config.memory.readMemory(), config.memory.listSkills()]);
+		return formatSystemPrompt(config.systemPrompt, memory, skills);
 	}
 
 	/**
@@ -61,21 +78,31 @@ export class PiChatAgent {
 
 		const model = resolveModelId(models, config.modelId) ?? available[0];
 
-		const tools: AgentTool<any>[] = config.enableVaultTools
-			? createVaultTools(config.vault)
-			: [];
+		const tools: AgentTool<any>[] = [];
+		if (config.enableVaultTools) tools.push(...createVaultTools(config.vault));
+		if (config.enableSelfTools && config.memory) {
+			tools.push(...createSelfTools(config.memory, () => self.refreshSystemPrompt()));
+		}
 
 		const agent = new Agent({
 			streamFn: (m, context, options) => models.stream(m, context, options),
 			initialState: {
 				model,
-				systemPrompt: config.systemPrompt,
+				systemPrompt: await PiChatAgent.buildSystemPrompt(config),
 				thinkingLevel: config.thinkingLevel,
 				tools,
 			},
 		});
 
-		return new PiChatAgent(models, agent);
+		const self = {
+			refreshSystemPrompt: async (): Promise<void> => {
+				agent.state.systemPrompt = await PiChatAgent.buildSystemPrompt(config);
+			},
+		};
+
+		const chat = new PiChatAgent(models, agent);
+		chat.refreshSystemPrompt = self.refreshSystemPrompt;
+		return chat;
 	}
 
 	/** Models the user could actually run right now (auth configured). */
@@ -96,7 +123,8 @@ export class PiChatAgent {
 	}
 
 	setVaultTools(vault: VaultBridge, enabled: boolean): void {
-		this.agent.state.tools = enabled ? createVaultTools(vault) : [];
+		const self = this.agent.state.tools.filter((tool) => !tool.name.startsWith("skill_") && tool.name !== "memory_write");
+		this.agent.state.tools = enabled ? [...self, ...createVaultTools(vault)] : self;
 	}
 
 	/** Send a user message. Resolves when the run fully settles. */

@@ -190,3 +190,123 @@
 .ob-pi-md > :last-child {
 	margin-bottom: 0;
 }
+
+/* Command feedback ("system" messages in assistant-ui terms). */
+
+.ob-pi-meta {
+	color: var(--text-faint);
+	font-size: var(--font-ui-smaller);
+	white-space: pre-wrap;
+}
+
+.ob-pi-meta-hint {
+	color: var(--text-faint);
+	font-size: var(--font-ui-smaller);
+}
+
+/* Slash command popover */
+
+.ob-pi-slash {
+	position: absolute;
+	bottom: 100%;
+	left: var(--size-4-3);
+	right: var(--size-4-3);
+	z-index: var(--layer-popover);
+	margin-bottom: var(--size-2-2);
+	background: var(--background-primary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-m);
+	box-shadow: var(--shadow-s);
+}
+
+.ob-pi-slash-items {
+	display: flex;
+	flex-direction: column;
+	padding: var(--size-2-1);
+	max-height: 240px;
+	overflow-y: auto;
+}
+
+.ob-pi-slash-item {
+	display: flex;
+	gap: var(--size-2-2);
+	align-items: baseline;
+	background: none;
+	border: none;
+	box-shadow: none;
+	cursor: pointer;
+	text-align: left;
+	padding: var(--size-2-1) var(--size-2-2);
+	border-radius: var(--radius-s);
+	width: 100%;
+}
+
+.ob-pi-slash-item:hover,
+.ob-pi-slash-item[data-highlighted="true"] {
+	background: var(--background-modifier-hover);
+}
+
+.ob-pi-slash-label {
+	font-family: var(--font-monospace);
+	font-size: var(--font-ui-smaller);
+	color: var(--text-normal);
+}
+
+.ob-pi-slash-desc {
+	color: var(--text-faint);
+	font-size: var(--font-ui-smaller);
+}
+
+/* Model quick-switcher */
+
+.ob-pi-picker-backdrop {
+	position: fixed;
+	inset: 0;
+	z-index: var(--layer-popover);
+	background: var(--background-modifier-overlay);
+}
+
+.ob-pi-picker {
+	position: absolute;
+	top: 20%;
+	left: 50%;
+	transform: translateX(-50%);
+	width: min(420px, 90%);
+	background: var(--background-primary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-m);
+	box-shadow: var(--shadow-s);
+	padding: var(--size-2-2);
+}
+
+.ob-pi-picker-filter {
+	width: 100%;
+	margin-bottom: var(--size-2-1);
+}
+
+.ob-pi-picker-list {
+	max-height: 300px;
+	overflow-y: auto;
+	display: flex;
+	flex-direction: column;
+}
+
+.ob-pi-picker-item {
+	text-align: left;
+	background: none;
+	border: none;
+	box-shadow: none;
+	cursor: pointer;
+	color: var(--text-normal);
+	padding: var(--size-2-1) var(--size-2-2);
+	border-radius: var(--radius-s);
+}
+
+.ob-pi-picker-item:hover {
+	background: var(--background-modifier-hover);
+}
+
+.ob-pi-picker-empty {
+	color: var(--text-faint);
+	padding: var(--size-2-2);
+}

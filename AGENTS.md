@@ -28,8 +28,10 @@ src/
                    tool setters. The only place both worlds meet.
     auth.ts        PiAuthStore: read-only CredentialStore over ~/.pi/agent/auth.json.
     tools.ts       createVaultTools(): vault_search / vault_read behind VaultBridge.
+    skills.ts      Vault skills + memory (self-growth tools, system-prompt composition).
+    sessions.ts    ChatSessionPersistor: pi-format linear JSONL under .ob-pi/sessions/.
 docs/research/     Verified API research: pi packages, pi-ai, pi-agent-core,
-                   assistant-ui, Obsidian plugin API, integration strategy.
+                   assistant-ui, Obsidian plugin API, sessions/skills, integration.
 esbuild.config.mjs ESM sources → CJS main.js (see "Build" below).
 manifest.json      Plugin manifest (isDesktopOnly: true — required, we use Node APIs).
 styles.css         Only theme CSS variables; no hard-coded colors.
@@ -72,6 +74,11 @@ Install into a vault for testing: copy `dist/*` to
 8. **Store layering**: `ObChatStore` (src/ui/store.ts) is the single subscriber to
    agent events and imports neither react nor obsidian. Components read snapshots
    via `useSyncExternalStore` — never hold agent references in components.
+9. **Vault data lives in `.ob-pi/`** (hidden folder): skills, memory, sessions.
+   The agent may write there via its tools; nothing else writes to the vault.
+10. **Sessions are linear**: pi-format JSONL without `id`/`parentId`. Restore sets
+   `agent.state.messages`; UI restore goes through `store.hydrate()` (never
+   re-persists). Persist only on `message_end`, only user/assistant/toolResult.
 
 ## pi idiom (UI rules)
 
@@ -96,11 +103,13 @@ Install into a vault for testing: copy `dist/*` to
 `PiChatAgent.create()` builds `builtinModels()` (all builtin providers, auth from the
 pi CLI's auth.json or env vars), picks the first available or configured model, and
 constructs `new Agent({ streamFn: models.stream, initialState: { model, systemPrompt,
-thinkingLevel, tools } })` with vault tools from `VaultBridge`. `ObChatStore`
-subscribes to agent events and keeps a snapshot (messages/isRunning/status); the
-React view converts that snapshot into assistant-ui's runtime via
-`useExternalStoreRuntime` (`onNew` → `store.send` → `agent.prompt()`, which resolves
-when the run settles). Settings mutate live via `agent.state` assignments.
+thinkingLevel, tools } })` with vault tools, plus skill/memory tools whose writes
+recompose the system prompt. `ObChatStore` subscribes to agent events, keeps a
+snapshot, and persists completed messages to `.ob-pi/sessions/*.jsonl` (pi format,
+linear); on startup the latest session restores into `agent.state.messages`. The
+React view converts snapshots into assistant-ui's runtime (`onNew` → `store.send` →
+`agent.prompt()`, which resolves when the run settles). Slash commands and the model
+picker mutate settings/agent live.
 
 ## Ideas backlog
 

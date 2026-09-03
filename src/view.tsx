@@ -11,10 +11,16 @@ export const VIEW_TYPE_OB_PI = "ob-pi-chat";
 export class PiChatView extends ItemView {
 	private readonly plugin: ObPiPlugin;
 	private reactRoot: Root | null = null;
+	private chatApi: { openModelPicker: () => void } | null = null;
 
 	constructor(leaf: WorkspaceLeaf, plugin: ObPiPlugin) {
 		super(leaf);
 		this.plugin = plugin;
+	}
+
+	/** Open the model quick-switcher (used by the /model command). */
+	openModelPicker(): void {
+		this.chatApi?.openModelPicker();
 	}
 
 	getViewType(): string {
@@ -39,6 +45,12 @@ export class PiChatView extends ItemView {
 				app={this.app}
 				component={this}
 				onNewChat={() => this.plugin.newConversation()}
+				runCommand={(text) => this.plugin.runCommand(text)}
+				loadModels={() => this.plugin.getAvailableModelOptions()}
+				selectModel={(value) => this.plugin.selectModel(value)}
+				onReady={(api) => {
+					this.chatApi = api;
+				}}
 			/>,
 		);
 	}
@@ -46,6 +58,7 @@ export class PiChatView extends ItemView {
 	async onClose(): Promise<void> {
 		// React 19: unmount is sync; flush pending work so MarkdownRenderer
 		// children aren't ripped out of a detached tree mid-effect.
+		this.chatApi = null;
 		this.reactRoot?.unmount();
 		this.reactRoot = null;
 		this.contentEl.empty();

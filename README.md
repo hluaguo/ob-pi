@@ -22,10 +22,16 @@ metadata lines for tool calls, markdown for answers. Your theme's fonts and colo
 - Streaming markdown responses rendered by Obsidian's own renderer
 - Built on [assistant-ui](https://www.assistant-ui.com/) primitives — proper
   composer UX, auto-scroll that respects your scroll position, send/stop states
+- **Chat history persists** per session (pi-format JSONL under `.ob-pi/sessions/`);
+  continues where you left off on reload
+- **Grows itself**: ask it to remember preferences or save reusable workflows —
+  stored as vault notes in `.ob-pi/` (memory + skills), fed back into its own prompt
+- Slash commands (`/help`, `/new`, `/model`, `/thinking`, `/skills`, `/memory`)
+  with a command menu, plus a model quick-switcher in the header
 - All builtin pi providers — credentials from the pi CLI (`~/.pi/agent/auth.json`)
   or environment variables, never re-entered
 - Vault tools the agent can use: `vault_search`, `vault_read`
-- Model picker, system prompt, thinking level, tools toggle in settings
+- Model, system prompt, thinking level, tools toggle in settings
 - Esc stops generation; "New conversation" resets
 
 ## Requirements
@@ -51,6 +57,7 @@ Copy `dist/*` to `<vault>/.obsidian/plugins/ob-pi/` and enable the plugin.
   - [pi-sdk-packages.md](docs/research/pi-sdk-packages.md) — which pi layers we use and why
   - [pi-ai-api.md](docs/research/pi-ai-api.md) — models, providers, auth
   - [pi-agent-core-api.md](docs/research/pi-agent-core-api.md) — Agent loop, tools, events
+  - [sessions-and-skills.md](docs/research/sessions-and-skills.md) — persistence format, self-growth design
   - [assistant-ui.md](docs/research/assistant-ui.md) — chat primitives, external-store adapter
   - [obsidian-plugin-api.md](docs/research/obsidian-plugin-api.md) — views, settings, markdown
   - [integration.md](docs/research/integration.md) — ESM→CJS, Electron renderer, strategy
